@@ -1,0 +1,365 @@
+/* ===== Base Reset & Theme ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --bg-tertiary: #eeeef0;
+  --text: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #aeaeb2;
+  --border: #d2d2d7;
+  --border-light: #e8e8ed;
+
+  --prismatic: linear-gradient(
+    135deg,
+    #ff6b6b, #ffa36b, #ffd56b, #6bffa3,
+    #6bd5ff, #a36bff, #ff6bb5, #ff6b6b
+  );
+  --prismatic-subtle: linear-gradient(
+    135deg,
+    #ffa0a0, #ffcc99, #ffe680, #99ffcc,
+    #99ddff, #cc99ff, #ff99cc, #ffa0a0
+  );
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Prismatic Button ===== */
+.prismatic-btn {
+  position: relative;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: none;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  isolation: isolate;
+  transition: transform 0.1s;
+}
+
+.prismatic-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  background: var(--prismatic);
+  background-size: 300% 300%;
+  z-index: -1;
+  animation: prismatic-shift 4s ease infinite;
+}
+
+.prismatic-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: var(--bg);
+  z-index: -1;
+}
+
+.prismatic-btn:hover {
+  transform: scale(1.02);
+}
+
+.prismatic-btn:active {
+  transform: scale(0.98);
+}
+
+.prismatic-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.prismatic-btn.filled::after {
+  background: transparent;
+}
+
+.prismatic-btn.filled {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.prismatic-btn.small {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
+}
+
+.prismatic-btn.small::before {
+  border-radius: 10px;
+}
+
+.prismatic-btn.small::after {
+  border-radius: 8px;
+}
+
+@keyframes prismatic-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ===== Loading Screen ===== */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-secondary);
+}
+
+/* ===== App Layout ===== */
+.app {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  gap: 1rem;
+}
+
+.app-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: var(--prismatic);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: prismatic-shift 4s ease infinite;
+}
+
+.app-nav {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.tab-btn {
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.tab-btn.active {
+  background: var(--bg-tertiary);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.app-main {
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ===== Form Inputs ===== */
+.input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #a36bff;
+  box-shadow: 0 0 0 3px rgba(163, 107, 255, 0.15);
+}
+
+.input-mono {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+textarea.input {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236e6e73' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+/* ===== Cards & Surfaces ===== */
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.surface {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+/* ===== Utility ===== */
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-sm { font-size: 0.8rem; }
+.text-xs { font-size: 0.7rem; }
+.text-mono { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.mt-sm { margin-top: 0.5rem; }
+.mb-sm { margin-bottom: 0.5rem; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.gap-sm { gap: 0.5rem; }
+.gap-md { gap: 0.75rem; }
+
+/* ===== Danger Button ===== */
+.btn-danger {
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ffcccc;
+  background: #fff5f5;
+  color: #cc3333;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover {
+  background: #ffe5e5;
+}
+
+/* ===== Category Badge ===== */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 5px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 500;
+}
+
+/* ===== Output Panel ===== */
+.output-panel {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.output-prose {
+  padding: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* ===== Upload Button ===== */
+.upload-btn {
+  position: relative;
+  padding: 1rem;
+  border-radius: 10px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-align: center;
+  isolation: isolate;
+}
+
+.upload-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  background: var(--prismatic-subtle);
+  background-size: 300% 300%;
+  z-index: -1;
+  animation: prismatic-shift 6s ease infinite;
+  opacity: 0.7;
+}
+
+.upload-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: var(--bg);
+  z-index: -1;
+}
+
+.upload-btn:hover::before {
+  opacity: 1;
+}
+
+/* ===== Divider ===== */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-light);
+}
+
+/* ===== Error text ===== */
+.text-error {
+  color: #cc3333;
+  font-size: 0.8rem;
+}

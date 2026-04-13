@@ -12,10 +12,17 @@ export function App() {
   const [activeTab, setActiveTab] = useState<Tab>('generate');
 
   useEffect(() => {
-    getApiKey().then((key) => {
-      setApiKeyState(key);
-      setLoading(false);
-    });
+    getApiKey()
+      .then((key) => {
+        setApiKeyState(key);
+      })
+      .catch(() => {
+        // IndexedDB unavailable or error - fall through to key entry
+        setApiKeyState(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleSaveKey = async (key: string) => {
@@ -30,8 +37,8 @@ export function App() {
 
   if (loading) {
     return (
-      <div style={styles.loading}>
-        <p style={{ color: '#8a8a9a' }}>Loading...</p>
+      <div className="loading-screen">
+        <p>Loading...</p>
       </div>
     );
   }
@@ -41,98 +48,32 @@ export function App() {
   }
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Advent</h1>
-        <nav style={styles.nav}>
+    <div className="app">
+      <header className="app-header">
+        <h1 className="app-title">Advent</h1>
+        <nav className="app-nav">
           <button
-            style={activeTab === 'generate' ? styles.tabActive : styles.tab}
+            className={`tab-btn ${activeTab === 'generate' ? 'active' : ''}`}
             onClick={() => setActiveTab('generate')}
           >
             Generate
           </button>
           <button
-            style={activeTab === 'codex' ? styles.tabActive : styles.tab}
+            className={`tab-btn ${activeTab === 'codex' ? 'active' : ''}`}
             onClick={() => setActiveTab('codex')}
           >
             Codex
           </button>
         </nav>
-        <button style={styles.logoutBtn} onClick={handleClearKey}>
+        <button className="prismatic-btn small" onClick={handleClearKey}>
           Key
         </button>
       </header>
 
-      <main style={styles.main}>
+      <main className="app-main">
         {activeTab === 'generate' && <GenerationView apiKey={apiKey} />}
         {activeTab === 'codex' && <LoreManager />}
       </main>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  loading: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    background: '#1a1a2e',
-  },
-  container: {
-    minHeight: '100vh',
-    background: '#1a1a2e',
-    color: '#e6e6e6',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0.75rem 1rem',
-    borderBottom: '1px solid #2a2a4a',
-    gap: '1rem',
-  },
-  title: {
-    margin: 0,
-    fontSize: '1.2rem',
-    color: '#4a6fa5',
-    fontWeight: 700,
-  },
-  nav: {
-    display: 'flex',
-    gap: '0.25rem',
-    flex: 1,
-  },
-  tab: {
-    padding: '0.4rem 0.8rem',
-    borderRadius: '6px',
-    border: 'none',
-    background: 'transparent',
-    color: '#6a6a8a',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-  },
-  tabActive: {
-    padding: '0.4rem 0.8rem',
-    borderRadius: '6px',
-    border: 'none',
-    background: '#2a2a4a',
-    color: '#e6e6e6',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-  },
-  logoutBtn: {
-    padding: '0.3rem 0.6rem',
-    borderRadius: '4px',
-    border: '1px solid #3a3a5a',
-    background: 'transparent',
-    color: '#6a6a8a',
-    cursor: 'pointer',
-    fontSize: '0.75rem',
-  },
-  main: {
-    padding: '1rem',
-    maxWidth: '800px',
-    margin: '0 auto',
-  },
-};

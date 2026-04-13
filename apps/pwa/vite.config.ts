@@ -13,8 +13,8 @@ export default defineConfig({
         name: 'Advent Writing Engine',
         short_name: 'Advent',
         description: 'AI-powered writing assistant for the Advent of Ultima',
-        theme_color: '#1a1a2e',
-        background_color: '#1a1a2e',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

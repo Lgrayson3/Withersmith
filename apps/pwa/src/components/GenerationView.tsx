@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { LoreDocument, PromptHierarchy, TwoPassConfig } from '@withersmith/engine';
+import type { PromptHierarchy, TwoPassConfig } from '@withersmith/engine';
 import { useLoreDocuments } from '../hooks/use-lore';
 import { useGeneration } from '../hooks/use-generation';
 
@@ -40,132 +40,55 @@ export function GenerationView({ apiKey }: GenerationViewProps) {
   const displayText = streamingText || result?.passOneOutput || result?.passTwoOutput || '';
 
   return (
-    <div>
-      <div style={styles.inputArea}>
+    <div className="flex flex-col gap-md">
+      <div>
         <textarea
           placeholder="Describe the scene you want to generate..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          style={styles.textarea}
+          className="input"
           rows={3}
           disabled={isGenerating}
         />
-        <div style={styles.actions}>
+        <div className="flex gap-sm mt-sm">
           <button
-            style={styles.generateBtn}
+            className="prismatic-btn filled"
             onClick={handleGenerate}
             disabled={isGenerating || !prompt.trim()}
           >
             {isGenerating ? 'Generating...' : 'Generate'}
           </button>
           {(result || error) && (
-            <button style={styles.resetBtn} onClick={reset}>
+            <button className="prismatic-btn" onClick={reset}>
               Clear
             </button>
           )}
         </div>
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {error && (
+        <div className="surface">
+          <p className="text-error">{error}</p>
+        </div>
+      )}
 
       {displayText && (
-        <div style={styles.output}>
-          <div style={styles.outputHeader}>
-            <span style={styles.outputLabel}>Output</span>
+        <div className="output-panel">
+          <div className="output-header">
+            <span className="text-tertiary text-xs" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Output
+            </span>
             {result && (
-              <span style={styles.metrics}>
+              <span className="text-tertiary text-xs text-mono">
                 {result.metrics.totalInputTokens} in / {result.metrics.totalOutputTokens} out
                 {result.metrics.passOneCacheMetrics.cacheReadInputTokens > 0 &&
                   ` | ${result.metrics.passOneCacheMetrics.cacheReadInputTokens} cached`}
               </span>
             )}
           </div>
-          <div style={styles.prose}>{displayText}</div>
+          <div className="output-prose">{displayText}</div>
         </div>
       )}
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  inputArea: {
-    marginBottom: '1rem',
-  },
-  textarea: {
-    width: '100%',
-    padding: '0.75rem',
-    borderRadius: '8px',
-    border: '1px solid #2a2a4a',
-    background: '#0f0f23',
-    color: '#e6e6e6',
-    fontSize: '0.9rem',
-    fontFamily: 'inherit',
-    resize: 'vertical',
-    boxSizing: 'border-box',
-    lineHeight: 1.5,
-  },
-  actions: {
-    display: 'flex',
-    gap: '0.5rem',
-    marginTop: '0.5rem',
-  },
-  generateBtn: {
-    padding: '0.6rem 1.2rem',
-    borderRadius: '8px',
-    border: 'none',
-    background: '#4a6fa5',
-    color: '#fff',
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  resetBtn: {
-    padding: '0.6rem 1rem',
-    borderRadius: '8px',
-    border: '1px solid #3a3a5a',
-    background: 'transparent',
-    color: '#8a8a9a',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-  },
-  error: {
-    color: '#ff6b6b',
-    background: '#2a1a1a',
-    padding: '0.75rem',
-    borderRadius: '8px',
-    fontSize: '0.85rem',
-  },
-  output: {
-    background: '#0f0f23',
-    borderRadius: '8px',
-    overflow: 'hidden',
-  },
-  outputHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.5rem 0.75rem',
-    background: '#16213e',
-    borderBottom: '1px solid #2a2a4a',
-  },
-  outputLabel: {
-    color: '#8a8a9a',
-    fontSize: '0.75rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  metrics: {
-    color: '#5a7a9a',
-    fontSize: '0.7rem',
-    fontFamily: 'monospace',
-  },
-  prose: {
-    padding: '1rem',
-    color: '#d4d4d4',
-    fontSize: '0.9rem',
-    lineHeight: 1.8,
-    whiteSpace: 'pre-wrap',
-    maxHeight: '60vh',
-    overflowY: 'auto',
-  },
-};
