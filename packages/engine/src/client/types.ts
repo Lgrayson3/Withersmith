@@ -12,4 +12,4 @@ export interface CacheMetrics {
   cacheReadInputTokens: number;
 }
 
-export const DEFAULT_MODEL = 'claude-sonnet-4-6-20250514';
+export const DEFAULT_MODEL = 'claude-sonnet-4-6';
