@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { ApiKeySetup } from './components/ApiKeySetup';
 import { GenerationView } from './components/GenerationView';
 import { LoreManager } from './components/LoreManager';
+import { ChaptersView } from './components/ChaptersView';
 import { getApiKey, setApiKey, clearApiKey } from './settings/api-key';
 
-type Tab = 'generate' | 'codex';
+type Tab = 'generate' | 'codex' | 'chapters';
 
 export function App() {
   const [apiKey, setApiKeyState] = useState<string | null>(null);
@@ -17,7 +18,6 @@ export function App() {
         setApiKeyState(key);
       })
       .catch(() => {
-        // IndexedDB unavailable or error - fall through to key entry
         setApiKeyState(null);
       })
       .finally(() => {
@@ -59,6 +59,12 @@ export function App() {
             Generate
           </button>
           <button
+            className={`tab-btn ${activeTab === 'chapters' ? 'active' : ''}`}
+            onClick={() => setActiveTab('chapters')}
+          >
+            Chapters
+          </button>
+          <button
             className={`tab-btn ${activeTab === 'codex' ? 'active' : ''}`}
             onClick={() => setActiveTab('codex')}
           >
@@ -71,7 +77,13 @@ export function App() {
       </header>
 
       <main className="app-main">
-        {activeTab === 'generate' && <GenerationView apiKey={apiKey} />}
+        {activeTab === 'generate' && (
+          <GenerationView
+            apiKey={apiKey}
+            onCrystallized={() => setActiveTab('chapters')}
+          />
+        )}
+        {activeTab === 'chapters' && <ChaptersView />}
         {activeTab === 'codex' && <LoreManager />}
       </main>
     </div>
