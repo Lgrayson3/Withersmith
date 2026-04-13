@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { LoreCategory } from '@withersmith/engine';
 import { useLoreDocuments } from '../hooks/use-lore';
+import { parseFile, detectFileType } from '../store/file-parser';
 
 const CATEGORIES: LoreCategory[] = [
   'cosmology',
@@ -13,12 +14,37 @@ const CATEGORIES: LoreCategory[] = [
   'custom',
 ];
 
+const ACCEPTED_TYPES = '.docx,.pdf,.txt,.md';
+
 export function LoreManager() {
   const { documents, isLoading, addDocument, deleteDocument } = useLoreDocuments();
   const [isAdding, setIsAdding] = useState(false);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<LoreCategory>('cosmology');
   const [content, setContent] = useState('');
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setParseError('');
+    setParsing(true);
+
+    try {
+      const result = await parseFile(file);
+      setContent(result.text);
+      if (!title) setTitle(result.title);
+    } catch (err) {
+      setParseError(err instanceof Error ? err.message : 'Failed to parse file');
+    } finally {
+      setParsing(false);
+      // Reset input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const handleAdd = async () => {
     if (!title.trim() || !content.trim()) return;
@@ -30,6 +56,14 @@ export function LoreManager() {
     });
     setTitle('');
     setContent('');
+    setParseError('');
+    setIsAdding(false);
+  };
+
+  const handleCancel = () => {
+    setTitle('');
+    setContent('');
+    setParseError('');
     setIsAdding(false);
   };
 
@@ -41,7 +75,7 @@ export function LoreManager() {
         <h2 style={styles.heading}>Codex ({documents.length})</h2>
         <button
           style={styles.addBtn}
-          onClick={() => setIsAdding(!isAdding)}
+          onClick={() => (isAdding ? handleCancel() : setIsAdding(true))}
         >
           {isAdding ? 'Cancel' : '+ Add'}
         </button>
@@ -49,6 +83,28 @@ export function LoreManager() {
 
       {isAdding && (
         <div style={styles.form}>
+          {/* File upload area */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED_TYPES}
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+          />
+          <button
+            style={styles.uploadBtn}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={parsing}
+          >
+            {parsing ? 'Parsing file...' : 'Upload .docx, .pdf, or .txt'}
+          </button>
+
+          {parseError && <p style={styles.error}>{parseError}</p>}
+
+          <div style={styles.divider}>
+            <span style={styles.dividerText}>or paste content below</span>
+          </div>
+
           <input
             placeholder="Document title"
             value={title}
@@ -70,9 +126,18 @@ export function LoreManager() {
             placeholder="Lore content..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            style={{ ...styles.input, minHeight: '120px', resize: 'vertical' }}
+            style={{ ...styles.input, minHeight: '160px', resize: 'vertical' }}
           />
-          <button style={styles.saveBtn} onClick={handleAdd}>
+          {content && (
+            <p style={styles.charCount}>
+              ~{Math.ceil(content.length / 4).toLocaleString()} tokens
+            </p>
+          )}
+          <button
+            style={styles.saveBtn}
+            onClick={handleAdd}
+            disabled={!title.trim() || !content.trim()}
+          >
             Save Document
           </button>
         </div>
@@ -81,9 +146,14 @@ export function LoreManager() {
       <div style={styles.list}>
         {documents.map((doc) => (
           <div key={doc.id} style={styles.item}>
-            <div>
-              <span style={styles.category}>{doc.category.replace('_', ' ')}</span>
-              <span style={styles.itemTitle}>{doc.title}</span>
+            <div style={styles.itemInfo}>
+              <div>
+                <span style={styles.category}>{doc.category.replace('_', ' ')}</span>
+                <span style={styles.itemTitle}>{doc.title}</span>
+              </div>
+              <span style={styles.itemTokens}>
+                ~{Math.ceil(doc.content.length / 4).toLocaleString()} tokens
+              </span>
             </div>
             <button
               style={styles.deleteBtn}
@@ -95,7 +165,7 @@ export function LoreManager() {
         ))}
         {documents.length === 0 && (
           <p style={styles.empty}>
-            No lore documents yet. Add your world-building here.
+            No lore documents yet. Upload your world-building files or paste content here.
           </p>
         )}
       </div>
@@ -133,6 +203,33 @@ const styles: Record<string, React.CSSProperties> = {
     background: '#0f0f23',
     borderRadius: '8px',
   },
+  uploadBtn: {
+    padding: '1rem',
+    borderRadius: '8px',
+    border: '2px dashed #3a3a5a',
+    background: 'transparent',
+    color: '#6a8ab5',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    textAlign: 'center',
+    transition: 'border-color 0.2s',
+  },
+  error: {
+    color: '#ff6b6b',
+    fontSize: '0.8rem',
+    margin: 0,
+  },
+  divider: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    margin: '0.25rem 0',
+  },
+  dividerText: {
+    color: '#5a5a6a',
+    fontSize: '0.75rem',
+    whiteSpace: 'nowrap',
+  },
   input: {
     padding: '0.6rem',
     borderRadius: '6px',
@@ -141,6 +238,13 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#e6e6e6',
     fontSize: '0.85rem',
     fontFamily: 'inherit',
+  },
+  charCount: {
+    color: '#5a7a9a',
+    fontSize: '0.75rem',
+    margin: 0,
+    textAlign: 'right',
+    fontFamily: 'monospace',
   },
   saveBtn: {
     padding: '0.6rem',
@@ -164,6 +268,13 @@ const styles: Record<string, React.CSSProperties> = {
     background: '#16213e',
     borderRadius: '8px',
   },
+  itemInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem',
+    flex: 1,
+    minWidth: 0,
+  },
   category: {
     display: 'inline-block',
     padding: '0.15rem 0.5rem',
@@ -178,6 +289,11 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#e6e6e6',
     fontSize: '0.9rem',
   },
+  itemTokens: {
+    color: '#5a7a9a',
+    fontSize: '0.7rem',
+    fontFamily: 'monospace',
+  },
   deleteBtn: {
     padding: '0.3rem 0.6rem',
     borderRadius: '4px',
@@ -186,6 +302,8 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#ff6b6b',
     cursor: 'pointer',
     fontSize: '0.75rem',
+    flexShrink: 0,
+    marginLeft: '0.5rem',
   },
   empty: {
     color: '#5a5a6a',
